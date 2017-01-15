@@ -1,16 +1,6 @@
-{
-Article: Your first MP3 Delphi player
-
-http://delphi.about.com/library/weekly/aa112800a.htm
-
-See how to build a full-blown mp3 player with Delphi
-in just a few seconds. Even more: get the ID3 tag
-information from a mp3 file and change it!
-
-For the .zip file of this project click here.
-
-}
-
+// mp3 player
+// I don't even know how to name it
+// (C) 2017 Adrian Makes Software
 
 unit Unit1;
 
@@ -19,8 +9,34 @@ interface
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, MPlayer, ComCtrls, ExtCtrls, VrControls, VrWheel,
-  VrLcd, VrMatrix, VrHPTimerFunc, VrLevelBar, VrSpectrum, VrNavigator;
+  VrLcd, VrMatrix, VrHPTimerFunc, VrLevelBar, VrSpectrum, VrNavigator,
+  VrSystem, VrDisplay, VrSwitch, VrImageLed, MMSystem;
 
+const
+  MCI_SETAUDIO = $0873;
+  MCI_DGV_SETAUDIO_VOLUME = $4002;
+  MCI_DGV_SETAUDIO_ITEM = $00800000;
+  MCI_DGV_SETAUDIO_VALUE = $01000000;
+  MCI_DGV_STATUS_VOLUME = $4019;
+
+type
+  MCI_DGV_SETAUDIO_PARMS = record
+    dwCallback: DWORD;
+    dwItem: DWORD;
+    dwValue: DWORD;
+    dwOver: DWORD;
+    lpstrAlgorithm: PChar;
+    lpstrQuality: PChar;
+  end;
+
+type
+  MCI_STATUS_PARMS = record
+    dwCallback: DWORD;
+    dwReturn: DWORD;
+    dwItem: DWORD;
+    dwTrack: DWORD;
+  end;
+  
 type
   TForm1 = class(TForm)
     mp3player: TMediaPlayer;
@@ -36,6 +52,19 @@ type
     VrMediaButton3: TVrMediaButton;
     VrMediaButton4: TVrMediaButton;
     VrMediaButton5: TVrMediaButton;
+    VrMediaButton6: TVrMediaButton;
+    VrMediaButton7: TVrMediaButton;
+    VrMediaButton8: TVrMediaButton;
+    VrMediaButton9: TVrMediaButton;
+    VrWheel2: TVrWheel;
+    VrRunOnce1: TVrRunOnce;
+    VrDisplay1: TVrDisplay;
+    VrImageLed1: TVrImageLed;
+    VrImageLed2: TVrImageLed;
+    VrSwitch1: TVrSwitch;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
     procedure btnOpenFolderClick(Sender: TObject);
     procedure mp3ListClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -44,6 +73,13 @@ type
     procedure VrMediaButton2Click(Sender: TObject);
     procedure VrMediaButton3Click(Sender: TObject);
     procedure Quit(Sender: TObject);
+    procedure VrMediaButton6Click(Sender: TObject);
+    procedure VrMediaButton7Click(Sender: TObject);
+    procedure ChangeSwitch(Sender: TObject);
+    procedure VrMediaButton8Click(Sender: TObject);
+    procedure VrMediaButton9Click(Sender: TObject);
+    procedure SongSelect;
+    procedure ChangeVolume(Sender: TObject);
   private
     { Private declarations }
   public
@@ -52,6 +88,9 @@ type
 
 var
   Form1: TForm1;
+  playing: Integer;
+  repeattype: Integer;
+  mciopen: Integer;
 
 type
   TID3Rec = packed record
@@ -229,6 +268,7 @@ begin
   VrSpectrum1.Items[4].Position := 0;
   VrSpectrum1.Items[5].Position := 0;
   VrSpectrum1.Items[6].Position := 0;
+  mciopen := 1;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -239,8 +279,30 @@ begin
 end;
 
 procedure TForm1.ProgresTimerTimer(Sender: TObject);
+  var mp3File: string;
 begin
+  if repeattype = 0 then begin
+    VrImageLed1.Active := False;
+    VrImageLed2.Active := False;
+  end;
+  if repeattype = 1 then begin
+     VrImageLed1.Active := True;
+    VrImageLed2.Active := False;
+  end;
+  if repeattype = 2 then begin
+    VrImageLed1.Active := True;
+    VrImageLed2.Active := True;
+  end;
+  if mciopen = 1 then begin
   if VRLevelBar1.MaxValue<>0 then
+    if mp3player.Position > mp3player.Length then begin
+      if repeattype = 1 then begin
+      mp3player.Position := 0;
+      end;
+      if repeattype <> 1 then begin
+      mp3List.ItemIndex := mp3List.ItemIndex + 1;
+      end;
+    end;
     if mp3player.Position > 0 then begin
     if VRLevelBar1.Position < VRLevelBar1.MaxValue then begin
     VrSpectrum1.Items[0].Position := Random(101);
@@ -262,6 +324,70 @@ begin
   end;
     end;
     VRLevelBar1.Position := mp3player.Position;
+  end;
+end;
+
+procedure TForm1.SongSelect;
+  var mp3File: string;
+begin
+  if repeattype = 0 then begin
+    VrImageLed1.Active := False;
+    VrImageLed2.Active := False;
+  end;
+  if repeattype = 1 then begin
+     VrImageLed1.Active := True;
+    VrImageLed2.Active := False;
+  end;
+  if repeattype = 2 then begin
+    VrImageLed1.Active := True;
+    VrImageLed2.Active := True;
+  end;
+  if mciopen = 1 then begin
+  if VRLevelBar1.MaxValue<>0 then
+    if VRLevelBar1.Position >= VRLevelBar1.MaxValue-100 then begin
+      if repeattype = 1 then begin
+      mp3player.Position := 0;
+      mp3player.Play;
+      end;
+      if repeattype <> 1 then begin
+      if repeattype = 2 then begin
+      if mp3List.ItemIndex >= mp3List.Count-1 then begin
+  mp3List.ItemIndex := 0;
+  Form1.mp3ListClick(self);
+  mp3Player.Position := 0;
+  mp3Player.Play;
+  end;
+  end;
+      if mp3List.ItemIndex < mp3List.Count-1 then begin
+   mp3List.ItemIndex := mp3List.ItemIndex + 1;
+    Form1.mp3ListClick(self);
+    mp3Player.Position := 0;
+    mp3Player.Play;
+    end;
+      end;
+    end;
+    if mp3player.Position > 0 then begin
+    if VRLevelBar1.Position < VRLevelBar1.MaxValue then begin
+    VrSpectrum1.Items[0].Position := Random(101);
+    VrSpectrum1.Items[1].Position := Random(101);
+    VrSpectrum1.Items[2].Position := Random(101);
+    VrSpectrum1.Items[3].Position := Random(101);
+    VrSpectrum1.Items[4].Position := Random(101);
+    VrSpectrum1.Items[5].Position := Random(101);
+    VrSpectrum1.Items[6].Position := Random(101);
+    end;
+    if VRLevelBar1.Position >= VRLevelBar1.MaxValue then begin
+    VrSpectrum1.Items[0].Position := 0;
+  VrSpectrum1.Items[1].Position := 0;
+  VrSpectrum1.Items[2].Position := 0;
+  VrSpectrum1.Items[3].Position := 0;
+  VrSpectrum1.Items[4].Position := 0;
+  VrSpectrum1.Items[5].Position := 0;
+  VrSpectrum1.Items[6].Position := 0;
+  end;
+    end;
+    VRLevelBar1.Position := mp3player.Position;
+  end;
 end;
 
 procedure TForm1.VrMediaButton1Click(Sender: TObject);
@@ -297,6 +423,70 @@ end;
 procedure TForm1.Quit(Sender: TObject);
 begin
   Form1.Close;
+end;
+
+procedure TForm1.VrMediaButton6Click(Sender: TObject);
+begin
+  mp3player.Position := mp3player.Position - Round(mp3player.Length/20);
+end;
+
+procedure TForm1.VrMediaButton7Click(Sender: TObject);
+begin
+  mp3player.Position := mp3player.Position + Round(mp3player.Length/20);
+end;
+
+procedure TForm1.ChangeSwitch(Sender: TObject);
+begin
+  if VrSwitch1.Offset = 0 then begin
+    repeattype := 0;
+  end;
+  if VrSwitch1.Offset = 1 then begin
+    repeattype := 1;
+  end;
+  if VrSwitch1.Offset = 2 then begin
+    repeattype := 2;
+  end;
+end;
+
+procedure TForm1.VrMediaButton8Click(Sender: TObject);
+begin
+  if mp3List.ItemIndex > 0 then begin
+  mp3List.ItemIndex := mp3List.ItemIndex - 1;
+  Form1.mp3ListClick(self);
+  mp3Player.Position := 0;
+  mp3Player.Play;
+  end;
+end;
+
+procedure TForm1.VrMediaButton9Click(Sender: TObject);
+begin
+  if mp3List.ItemIndex < mp3List.Count-1 then begin
+  mp3List.ItemIndex := mp3List.ItemIndex + 1;
+  Form1.mp3ListClick(self);
+  mp3Player.Position := 0;
+  mp3Player.Play;
+  end;
+end;
+
+procedure SetMPVolume(MP: TMediaPlayer; Volume: Integer);
+  { Volume: 0 - 1000 }
+var
+  p: MCI_DGV_SETAUDIO_PARMS;
+begin
+  { Volume: 0 - 1000 }
+  p.dwCallback := 0;
+  p.dwItem := MCI_DGV_SETAUDIO_VOLUME;
+  p.dwValue := Volume;
+  p.dwOver := 0;
+  p.lpstrAlgorithm := nil;
+  p.lpstrQuality := nil;
+  mciSendCommand(MP.DeviceID, MCI_SETAUDIO,
+    MCI_DGV_SETAUDIO_VALUE or MCI_DGV_SETAUDIO_ITEM, Cardinal(@p));
+end;
+
+procedure TForm1.ChangeVolume(Sender: TObject);
+begin
+  SetMPVolume(mp3player, VrWheel2.Position);
 end;
 
 end.

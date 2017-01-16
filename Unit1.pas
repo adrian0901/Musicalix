@@ -11,7 +11,7 @@ uses
   StdCtrls, Buttons, MPlayer, ComCtrls, ExtCtrls, VrControls, VrWheel,
   VrLcd, VrMatrix, VrHPTimerFunc, VrLevelBar, VrSpectrum, VrNavigator,
   VrSystem, VrDisplay, VrSwitch, VrImageLed, MMSystem, VrLabel, ImgList,
-  Menus;
+  Menus, inifiles;
 
 const
   MCI_SETAUDIO = $0873;
@@ -98,7 +98,6 @@ type
     procedure ChangeSwitch(Sender: TObject);
     procedure VrMediaButton8Click(Sender: TObject);
     procedure VrMediaButton9Click(Sender: TObject);
-    procedure ChangeVolume(Sender: TObject);
     procedure ChangeLanguage(Sender: TObject);
   private
     { Private declarations }
@@ -113,6 +112,20 @@ var
   mciopen: Integer;
   paused: Integer;
   last: Integer;
+  bytext: string;
+  fromtext: string;
+  inyeartext: string;
+  oftext: string;
+  genretext: string;
+  choosefoldertext: string;
+  playtext: string;
+  pausetext: string;
+  stoptext: string;
+  backtext: string;
+  steptext: string;
+  languagetext: string;
+  skintext: string;
+  closetext: string;
 
 type
   TID3Rec = packed record
@@ -177,7 +190,7 @@ begin
   end;
 
  if ID3.Tag <> 'TAG' then begin
-   VrMatrix1.Text:='Wrong or no ID3 tag information';
+   VrMatrix1.Text:=mp3File;
  end else begin
    if ID3.Genre in [0..MaxID3Genre] then
      VrMatrix1.Text:=ID3.Title + ' by '+ID3.Artist+' from '+ID3.Album+' in year '+ID3.Year+' of '+ID3Genre[ID3.Genre]+' genre'
@@ -314,13 +327,7 @@ end;
 
 procedure TForm1.mp3ListClick(Sender: TObject);
  var mp3File:string;
- myDate : TDateTime;
- myHour, myMin, mySec, myMilli : Word;
 begin
-  myDate := Now;
-  DecodeTime(myDate, myHour, myMin, mySec, myMilli);
-  VrClock1.Hours := myHour;
-  VrClock1.Minutes := myMin;
   if mp3List.Items.Count=0 then exit;
   if mp3List.ItemIndex <> last then begin;
   mp3File := Concat(VRMatrix2.Text, mp3List.Items.Strings[mp3List.ItemIndex]);
@@ -357,9 +364,32 @@ begin
   paused := 1;
 end;
 
-procedure TForm1.ProgresTimerTimer(Sender: TObject);
-  var mp3File: string;
+procedure SetMPVolume(MP: TMediaPlayer; Volume: Integer);
+  { Volume: 0 - 1000 }
+var
+  p: MCI_DGV_SETAUDIO_PARMS;
 begin
+  { Volume: 0 - 1000 }
+  p.dwCallback := 0;
+  p.dwItem := MCI_DGV_SETAUDIO_VOLUME;
+  p.dwValue := Volume;
+  p.dwOver := 0;
+  p.lpstrAlgorithm := nil;
+  p.lpstrQuality := nil;
+  mciSendCommand(MP.DeviceID, MCI_SETAUDIO,
+    MCI_DGV_SETAUDIO_VALUE or MCI_DGV_SETAUDIO_ITEM, Cardinal(@p));
+end;
+
+procedure TForm1.ProgresTimerTimer(Sender: TObject);
+  var
+  myDate : TDateTime;
+ myHour, myMin, mySec, myMilli : Word;
+begin
+  myDate := Now;
+  DecodeTime(myDate, myHour, myMin, mySec, myMilli);
+  VrClock1.Hours := myHour;
+  VrClock1.Minutes := myMin;
+  SetMPVolume(mp3player, VrWheel2.Position);
   if repeattype = 0 then begin
     VrImageLed1.Active := False;
     VrImageLed2.Active := False;
@@ -538,30 +568,34 @@ begin
   end;
 end;
 
-procedure SetMPVolume(MP: TMediaPlayer; Volume: Integer);
-  { Volume: 0 - 1000 }
-var
-  p: MCI_DGV_SETAUDIO_PARMS;
-begin
-  { Volume: 0 - 1000 }
-  p.dwCallback := 0;
-  p.dwItem := MCI_DGV_SETAUDIO_VOLUME;
-  p.dwValue := Volume;
-  p.dwOver := 0;
-  p.lpstrAlgorithm := nil;
-  p.lpstrQuality := nil;
-  mciSendCommand(MP.DeviceID, MCI_SETAUDIO,
-    MCI_DGV_SETAUDIO_VALUE or MCI_DGV_SETAUDIO_ITEM, Cardinal(@p));
-end;
-
-procedure TForm1.ChangeVolume(Sender: TObject);
-begin
-  SetMPVolume(mp3player, VrWheel2.Position);
-end;
-
 procedure TForm1.ChangeLanguage(Sender: TObject);
+var
+  opendialog: topendialog;
 begin
-  // something
+  // Create the open dialog object - assign to our open dialog variable
+  openDialog := TOpenDialog.Create(self);
+
+  // Set up the starting directory to be the current one
+  openDialog.InitialDir := GetCurrentDir;
+
+  // Only allow existing files to be selected
+  openDialog.Options := [ofFileMustExist];
+
+  // Allow only .dpr and .pas files to be selected
+  openDialog.Filter :=
+    'INI|*.ini';
+
+  // Select pascal files as the starting filter type
+  openDialog.FilterIndex := 2;
+
+  // Display the open file dialog
+  if openDialog.Execute
+  then begin
+
+  end;
+
+  // Free up the dialog
+  openDialog.Free;
 end;
 
 end.

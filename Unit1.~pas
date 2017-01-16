@@ -66,7 +66,6 @@ type
     Label2: TLabel;
     Label3: TLabel;
     VrClock1: TVrClock;
-    VrLabel1: TVrLabel;
     procedure btnOpenFolderClick(Sender: TObject);
     procedure mp3ListClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -160,9 +159,9 @@ begin
    VrMatrix1.Text:='Wrong or no ID3 tag information';
  end else begin
    if ID3.Genre in [0..MaxID3Genre] then
-     VrMatrix1.Text:=ID3.Title + ' by '+ID3.Artist+' from '+ID3.Album+' in year'+ID3.Year+' of '+ID3Genre[ID3.Genre]+' genre'
+     VrMatrix1.Text:=ID3.Title + ' by '+ID3.Artist+' from '+ID3.Album+' in year '+ID3.Year+' of '+ID3Genre[ID3.Genre]+' genre'
    else
-     VrMatrix1.Text:=ID3.Title + ' by '+ID3.Artist+' from '+ID3.Album+' in year'+ID3.Year+' of unknown genre';
+     VrMatrix1.Text:=ID3.Title + ' by '+ID3.Artist+' from '+ID3.Album+' in year '+ID3.Year+' of unknown genre';
  end;
 end;
 
@@ -198,6 +197,54 @@ var Rec : TSearchRec;
 begin
  sl.Clear;
  if SysUtils.FindFirst(Folder + '*.mp3', faAnyFile, Rec) = 0 then
+  try
+    repeat
+      sl.Add(Rec.Name);
+    until SysUtils.FindNext(Rec) <> 0;
+  finally
+    SysUtils.FindClose(Rec);
+  end;
+ if SysUtils.FindFirst(Folder + '*.wma', faAnyFile, Rec) = 0 then
+  try
+    repeat
+      sl.Add(Rec.Name);
+    until SysUtils.FindNext(Rec) <> 0;
+  finally
+    SysUtils.FindClose(Rec);
+  end;
+ if SysUtils.FindFirst(Folder + '*.mid', faAnyFile, Rec) = 0 then
+  try
+    repeat
+      sl.Add(Rec.Name);
+    until SysUtils.FindNext(Rec) <> 0;
+  finally
+    SysUtils.FindClose(Rec);
+  end;
+  if SysUtils.FindFirst(Folder + '*.midi', faAnyFile, Rec) = 0 then
+  try
+    repeat
+      sl.Add(Rec.Name);
+    until SysUtils.FindNext(Rec) <> 0;
+  finally
+    SysUtils.FindClose(Rec);
+  end;
+  if SysUtils.FindFirst(Folder + '*.rmi', faAnyFile, Rec) = 0 then
+  try
+    repeat
+      sl.Add(Rec.Name);
+    until SysUtils.FindNext(Rec) <> 0;
+  finally
+    SysUtils.FindClose(Rec);
+  end;
+  if SysUtils.FindFirst(Folder + '*.wav', faAnyFile, Rec) = 0 then
+  try
+    repeat
+      sl.Add(Rec.Name);
+    until SysUtils.FindNext(Rec) <> 0;
+  finally
+    SysUtils.FindClose(Rec);
+  end;
+  if SysUtils.FindFirst(Folder + '*.kar', faAnyFile, Rec) = 0 then
   try
     repeat
       sl.Add(Rec.Name);

@@ -10,7 +10,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, MPlayer, ComCtrls, ExtCtrls, VrControls, VrWheel,
   VrLcd, VrMatrix, VrHPTimerFunc, VrLevelBar, VrSpectrum, VrNavigator,
-  VrSystem, VrDisplay, VrSwitch, VrImageLed, MMSystem;
+  VrSystem, VrDisplay, VrSwitch, VrImageLed, MMSystem, VrLabel;
 
 const
   MCI_SETAUDIO = $0873;
@@ -65,6 +65,7 @@ type
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
+    VrClock1: TVrClock;
     procedure btnOpenFolderClick(Sender: TObject);
     procedure mp3ListClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -78,7 +79,6 @@ type
     procedure ChangeSwitch(Sender: TObject);
     procedure VrMediaButton8Click(Sender: TObject);
     procedure VrMediaButton9Click(Sender: TObject);
-    procedure SongSelect;
     procedure ChangeVolume(Sender: TObject);
   private
     { Private declarations }
@@ -91,6 +91,7 @@ var
   playing: Integer;
   repeattype: Integer;
   mciopen: Integer;
+  paused: Integer;
 
 type
   TID3Rec = packed record
@@ -276,6 +277,7 @@ begin
   VRMatrix2.Text := ExtractFilePath(Application.ExeName);
   FillMP3FileList(VRMatrix2.Text, mp3List.Items);
   VRLevelBar1.MaxValue:=0;
+  paused := 1;
 end;
 
 procedure TForm1.ProgresTimerTimer(Sender: TObject);
@@ -295,16 +297,9 @@ begin
   end;
   if mciopen = 1 then begin
   if VRLevelBar1.MaxValue<>0 then
-    if mp3player.Position > mp3player.Length then begin
-      if repeattype = 1 then begin
-      mp3player.Position := 0;
-      end;
-      if repeattype <> 1 then begin
-      mp3List.ItemIndex := mp3List.ItemIndex + 1;
-      end;
-    end;
     if mp3player.Position > 0 then begin
     if VRLevelBar1.Position < VRLevelBar1.MaxValue then begin
+    if paused = 0 then begin
     VrSpectrum1.Items[0].Position := Random(101);
     VrSpectrum1.Items[1].Position := Random(101);
     VrSpectrum1.Items[2].Position := Random(101);
@@ -312,6 +307,7 @@ begin
     VrSpectrum1.Items[4].Position := Random(101);
     VrSpectrum1.Items[5].Position := Random(101);
     VrSpectrum1.Items[6].Position := Random(101);
+    end;
     end;
     if VRLevelBar1.Position >= VRLevelBar1.MaxValue then begin
     VrSpectrum1.Items[0].Position := 0;
@@ -321,35 +317,17 @@ begin
   VrSpectrum1.Items[4].Position := 0;
   VrSpectrum1.Items[5].Position := 0;
   VrSpectrum1.Items[6].Position := 0;
-  end;
-    end;
-    VRLevelBar1.Position := mp3player.Position;
-  end;
-end;
-
-procedure TForm1.SongSelect;
-  var mp3File: string;
-begin
-  if repeattype = 0 then begin
-    VrImageLed1.Active := False;
-    VrImageLed2.Active := False;
-  end;
-  if repeattype = 1 then begin
-     VrImageLed1.Active := True;
-    VrImageLed2.Active := False;
-  end;
-  if repeattype = 2 then begin
-    VrImageLed1.Active := True;
-    VrImageLed2.Active := True;
-  end;
-  if mciopen = 1 then begin
-  if VRLevelBar1.MaxValue<>0 then
-    if VRLevelBar1.Position >= VRLevelBar1.MaxValue-100 then begin
       if repeattype = 1 then begin
       mp3player.Position := 0;
       mp3player.Play;
       end;
       if repeattype <> 1 then begin
+      if mp3List.ItemIndex < mp3List.Count-1 then begin
+   mp3List.ItemIndex := mp3List.ItemIndex + 1;
+    Form1.mp3ListClick(self);
+    mp3Player.Position := 0;
+    mp3Player.Play;
+    end;
       if repeattype = 2 then begin
       if mp3List.ItemIndex >= mp3List.Count-1 then begin
   mp3List.ItemIndex := 0;
@@ -358,32 +336,7 @@ begin
   mp3Player.Play;
   end;
   end;
-      if mp3List.ItemIndex < mp3List.Count-1 then begin
-   mp3List.ItemIndex := mp3List.ItemIndex + 1;
-    Form1.mp3ListClick(self);
-    mp3Player.Position := 0;
-    mp3Player.Play;
-    end;
       end;
-    end;
-    if mp3player.Position > 0 then begin
-    if VRLevelBar1.Position < VRLevelBar1.MaxValue then begin
-    VrSpectrum1.Items[0].Position := Random(101);
-    VrSpectrum1.Items[1].Position := Random(101);
-    VrSpectrum1.Items[2].Position := Random(101);
-    VrSpectrum1.Items[3].Position := Random(101);
-    VrSpectrum1.Items[4].Position := Random(101);
-    VrSpectrum1.Items[5].Position := Random(101);
-    VrSpectrum1.Items[6].Position := Random(101);
-    end;
-    if VRLevelBar1.Position >= VRLevelBar1.MaxValue then begin
-    VrSpectrum1.Items[0].Position := 0;
-  VrSpectrum1.Items[1].Position := 0;
-  VrSpectrum1.Items[2].Position := 0;
-  VrSpectrum1.Items[3].Position := 0;
-  VrSpectrum1.Items[4].Position := 0;
-  VrSpectrum1.Items[5].Position := 0;
-  VrSpectrum1.Items[6].Position := 0;
   end;
     end;
     VRLevelBar1.Position := mp3player.Position;
@@ -392,12 +345,17 @@ end;
 
 procedure TForm1.VrMediaButton1Click(Sender: TObject);
 begin
-  mp3player.Play
+  if mciopen = 1 then begin
+  mp3player.Play;
+  paused := 0;
+  end
 end;
 
 procedure TForm1.VrMediaButton2Click(Sender: TObject);
 begin
+  if mciopen = 1 then begin
   mp3player.PauseOnly;
+  paused := 1;
   VrSpectrum1.Items[0].Position := 0;
   VrSpectrum1.Items[1].Position := 0;
   VrSpectrum1.Items[2].Position := 0;
@@ -405,12 +363,15 @@ begin
   VrSpectrum1.Items[4].Position := 0;
   VrSpectrum1.Items[5].Position := 0;
   VrSpectrum1.Items[6].Position := 0;
+  end
 end;
 
 procedure TForm1.VrMediaButton3Click(Sender: TObject);
 begin
+  if mciopen = 1 then begin
   mp3player.Stop;
   mp3player.Position := 0;
+  paused := 0;
   VrSpectrum1.Items[0].Position := 0;
   VrSpectrum1.Items[1].Position := 0;
   VrSpectrum1.Items[2].Position := 0;
@@ -418,6 +379,7 @@ begin
   VrSpectrum1.Items[4].Position := 0;
   VrSpectrum1.Items[5].Position := 0;
   VrSpectrum1.Items[6].Position := 0;
+  end;
 end;
 
 procedure TForm1.Quit(Sender: TObject);
@@ -427,12 +389,22 @@ end;
 
 procedure TForm1.VrMediaButton6Click(Sender: TObject);
 begin
+  if mciopen = 1 then begin
   mp3player.Position := mp3player.Position - Round(mp3player.Length/20);
+  if paused = 0 then begin
+  mp3player.Play;
+  end;
+  end;
 end;
 
 procedure TForm1.VrMediaButton7Click(Sender: TObject);
 begin
+  if mciopen = 1 then begin
   mp3player.Position := mp3player.Position + Round(mp3player.Length/20);
+  if paused = 0 then begin
+  mp3player.Play;
+  end;
+  end;
 end;
 
 procedure TForm1.ChangeSwitch(Sender: TObject);
@@ -450,11 +422,19 @@ end;
 
 procedure TForm1.VrMediaButton8Click(Sender: TObject);
 begin
+  if mp3player.Position < 1500 then begin
   if mp3List.ItemIndex > 0 then begin
   mp3List.ItemIndex := mp3List.ItemIndex - 1;
   Form1.mp3ListClick(self);
   mp3Player.Position := 0;
   mp3Player.Play;
+  end;
+  end;
+  if mp3player.Position >= 1500 then begin
+  mp3player.Position := 0;
+  if paused = 0 then begin
+  mp3Player.Play
+  end;
   end;
 end;
 

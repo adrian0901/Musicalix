@@ -10,7 +10,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Buttons, MPlayer, ComCtrls, ExtCtrls, VrControls, VrWheel,
   VrLcd, VrMatrix, VrHPTimerFunc, VrLevelBar, VrSpectrum, VrNavigator,
-  VrSystem, VrDisplay, VrSwitch, VrImageLed, MMSystem, VrLabel;
+  VrSystem, VrDisplay, VrSwitch, VrImageLed, MMSystem, VrLabel, ImgList,
+  Menus;
 
 const
   MCI_SETAUDIO = $0873;
@@ -66,6 +67,24 @@ type
     Label2: TLabel;
     Label3: TLabel;
     VrClock1: TVrClock;
+    Label4: TLabel;
+    ImageList1: TImageList;
+    VrTrayIcon1: TVrTrayIcon;
+    PopupMenu1: TPopupMenu;
+    Play1: TMenuItem;
+    Pause1: TMenuItem;
+    Stop1: TMenuItem;
+    N1: TMenuItem;
+    Back1: TMenuItem;
+    Step1: TMenuItem;
+    N2: TMenuItem;
+    Prev1: TMenuItem;
+    Next1: TMenuItem;
+    N3: TMenuItem;
+    Language1: TMenuItem;
+    Skincomingsoon1: TMenuItem;
+    N4: TMenuItem;
+    Close1: TMenuItem;
     procedure btnOpenFolderClick(Sender: TObject);
     procedure mp3ListClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -80,6 +99,7 @@ type
     procedure VrMediaButton8Click(Sender: TObject);
     procedure VrMediaButton9Click(Sender: TObject);
     procedure ChangeVolume(Sender: TObject);
+    procedure ChangeLanguage(Sender: TObject);
   private
     { Private declarations }
   public
@@ -92,6 +112,7 @@ var
   repeattype: Integer;
   mciopen: Integer;
   paused: Integer;
+  last: Integer;
 
 type
   TID3Rec = packed record
@@ -293,11 +314,18 @@ end;
 
 procedure TForm1.mp3ListClick(Sender: TObject);
  var mp3File:string;
+ myDate : TDateTime;
+ myHour, myMin, mySec, myMilli : Word;
 begin
+  myDate := Now;
+  DecodeTime(myDate, myHour, myMin, mySec, myMilli);
+  VrClock1.Hours := myHour;
+  VrClock1.Minutes := myMin;
   if mp3List.Items.Count=0 then exit;
+  if mp3List.ItemIndex <> last then begin;
   mp3File := Concat(VRMatrix2.Text, mp3List.Items.Strings[mp3List.ItemIndex]);
+  end;
   if not FileExists(mp3File) then begin
-   ShowMessage('MP3 file '+#13#10+ mp3File +#13#10+'does not exist!');
    exit;
   end;
 
@@ -318,6 +346,7 @@ begin
   VrSpectrum1.Items[5].Position := 0;
   VrSpectrum1.Items[6].Position := 0;
   mciopen := 1;
+  last := mp3List.ItemIndex;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -341,6 +370,10 @@ begin
   end;
   if repeattype = 2 then begin
     VrImageLed1.Active := True;
+    VrImageLed2.Active := True;
+  end;
+  if repeattype = 3 then begin
+    VrImageLed1.Active := False;
     VrImageLed2.Active := True;
   end;
   if mciopen = 1 then begin
@@ -369,7 +402,13 @@ begin
       mp3player.Position := 0;
       mp3player.Play;
       end;
-      if repeattype <> 1 then begin
+      if repeattype = 3 then begin
+      mp3List.ItemIndex := random(mp3List.Count);
+      Form1.mp3ListClick(self);
+      mp3Player.Position := 0;
+      mp3Player.Play;
+      end;
+      if (repeattype <> 1) and (repeattype <> 3) then begin
       if mp3List.ItemIndex < mp3List.Count-1 then begin
    mp3List.ItemIndex := mp3List.ItemIndex + 1;
     Form1.mp3ListClick(self);
@@ -466,6 +505,9 @@ begin
   if VrSwitch1.Offset = 2 then begin
     repeattype := 2;
   end;
+  if VrSwitch1.Offset = 3 then begin
+    repeattype := 3;
+  end;
 end;
 
 procedure TForm1.VrMediaButton8Click(Sender: TObject);
@@ -515,6 +557,11 @@ end;
 procedure TForm1.ChangeVolume(Sender: TObject);
 begin
   SetMPVolume(mp3player, VrWheel2.Position);
+end;
+
+procedure TForm1.ChangeLanguage(Sender: TObject);
+begin
+  // something
 end;
 
 end.

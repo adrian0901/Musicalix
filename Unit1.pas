@@ -99,6 +99,8 @@ type
     procedure VrMediaButton8Click(Sender: TObject);
     procedure VrMediaButton9Click(Sender: TObject);
     procedure ChangeLanguage(Sender: TObject);
+    procedure ChangeSkin(Sender: TObject);
+    procedure WriteDefaultSkin(Sender: TObject);
   private
     { Private declarations }
   public
@@ -639,6 +641,113 @@ begin
   Label2.Caption := repsongtext;
   Label3.Caption := replisttext;
   Label4.Caption := shuffletext;
+
+  end;
+
+  // Free up the dialog
+  openDialog.Free;
+end;
+
+procedure TForm1.ChangeSkin(Sender: TObject);
+var
+  opendialog: topendialog;
+  ini: TIniFile;
+begin
+  // Create the open dialog object - assign to our open dialog variable
+  openDialog := TOpenDialog.Create(self);
+
+  // Set up the starting directory to be the current one
+  openDialog.InitialDir := GetCurrentDir;
+
+  // Only allow existing files to be selected
+  //openDialog.Options := [ofFileMustExist];
+
+  // Allow only .ini files to be selected
+  openDialog.Filter :=
+    'INI|*.ini';
+
+  // Display the open file dialog
+  if openDialog.Execute
+  then begin
+  ini := TIniFile.Create(openDialog.FileName);
+  VRMatrix1.Color := ini.ReadInteger('CustomSkin','LCDColor',16711680) ;
+  VRMatrix2.Color := ini.ReadInteger('CustomSkin','LCDColor',16711680) ;
+  mp3List.Color := ini.ReadInteger('CustomSkin','LCDColor',16711680) ;
+  VRDisplay1.Color := ini.ReadInteger('CustomSkin','LCDColor',16711680) ;
+  VRImageLed1.Color := ini.ReadInteger('CustomSkin','LCDColor',16711680) ;
+  VRImageLed2.Color := ini.ReadInteger('CustomSkin','LCDColor',16711680) ;
+  VRClock1.Color := ini.ReadInteger('CustomSkin','LCDColor',16711680) ;
+  VRLevelBar1.Color := ini.ReadInteger('CustomSkin','LCDColor',16711680) ;
+  VRLevelBar1.Palette1.High := ini.ReadInteger('CustomSkin','Bar1PH',16711680) ;
+  VRLevelBar1.Palette1.Low := ini.ReadInteger('CustomSkin','Bar1PL',16711680) ;
+  VRLevelBar1.Palette2.High := ini.ReadInteger('CustomSkin','Bar2PH',16711680) ;
+  VRLevelBar1.Palette2.Low := ini.ReadInteger('CustomSkin','Bar2PL',16711680) ;
+  VRLevelBar1.Palette3.High := ini.ReadInteger('CustomSkin','Bar3PH',16711680) ;
+  VRLevelBar1.Palette3.Low := ini.ReadInteger('CustomSkin','Bar3PL',16711680) ;
+  VrMatrix1.Palette.High := ini.ReadInteger('CustomSkin','LCDHigh',16711680) ;
+  VrMatrix1.Palette.Low := ini.ReadInteger('CustomSkin','LCDLow',16711680) ;
+  VrMatrix2.Palette.High := ini.ReadInteger('CustomSkin','LCDHigh',16711680) ;
+  VrMatrix2.Palette.Low := ini.ReadInteger('CustomSkin','LCDLow',16711680) ;
+  VrImageLed1.Palette.High := ini.ReadInteger('CustomSkin','LCDHigh',16711680) ;
+  VrImageLed1.Palette.Low := ini.ReadInteger('CustomSkin','LCDLow',16711680) ;
+  VrImageLed2.Palette.High := ini.ReadInteger('CustomSkin','LCDHigh',16711680) ;
+  VrImageLed2.Palette.Low := ini.ReadInteger('CustomSkin','LCDLow',16711680) ;
+  VrClock1.Palette.High := ini.ReadInteger('CustomSkin','LCDHigh',16711680) ;
+  VrClock1.Palette.Low := ini.ReadInteger('CustomSkin','LCDLow',16711680) ;
+  VrSpectrum1.MarkerColor := ini.ReadInteger('CustomSkin','SpectrumMarker',16711680) ;
+  VrSpectrum1.Color := ini.ReadInteger('CustomSkin','SpectrumColor',16711680) ;
+  VRSpectrum1.Palette1.High := ini.ReadInteger('CustomSkin','Spec1PH',16711680) ;
+  VRSpectrum1.Palette1.Low := ini.ReadInteger('CustomSkin','Spec1PL',16711680) ;
+  VRSpectrum1.Palette2.High := ini.ReadInteger('CustomSkin','Spec2PH',16711680) ;
+  VRSpectrum1.Palette2.Low := ini.ReadInteger('CustomSkin','Spec2PL',16711680) ;
+  VRSpectrum1.Palette3.High := ini.ReadInteger('CustomSkin','Spec3PH',16711680) ;
+  VRSpectrum1.Palette3.Low := ini.ReadInteger('CustomSkin','Spec3PL',16711680) ;
+
+  end;
+
+  // Free up the dialog
+  openDialog.Free;
+end;
+
+procedure TForm1.WriteDefaultSkin(Sender: TObject);
+var
+  opendialog: topendialog;
+  ini: TIniFile;
+begin
+  // Create the open dialog object - assign to our open dialog variable
+  openDialog := TOpenDialog.Create(self);
+
+  // Set up the starting directory to be the current one
+  openDialog.InitialDir := GetCurrentDir;
+
+  // Only allow existing files to be selected
+  //openDialog.Options := [ofFileMustExist];
+
+  // Allow only .ini files to be selected
+  openDialog.Filter :=
+    'INI|*.ini';
+
+  // Display the open file dialog
+  if openDialog.Execute
+  then begin
+  ini := TIniFile.Create(openDialog.FileName);
+  ini.WriteInteger('CustomSkin','LCDColor',VRMatrix1.Color) ;
+  ini.WriteInteger('CustomSkin','Bar1PH',VRLevelBar1.Palette1.High) ;
+  ini.WriteInteger('CustomSkin','Bar1PL',VRLevelBar1.Palette1.Low) ;
+  ini.WriteInteger('CustomSkin','Bar2PH',VRLevelBar1.Palette2.High) ;
+  ini.WriteInteger('CustomSkin','Bar2PL',VRLevelBar1.Palette2.Low) ;
+  ini.WriteInteger('CustomSkin','Bar3PH',VRLevelBar1.Palette3.High) ;
+  ini.WriteInteger('CustomSkin','Bar3PL',VRLevelBar1.Palette3.Low) ;
+  ini.WriteInteger('CustomSkin','LCDHigh',VrMatrix1.Palette.High) ;
+  ini.WriteInteger('CustomSkin','LCDLow',VrMatrix1.Palette.Low) ;
+  ini.WriteInteger('CustomSkin','SpectrumMarker',VrSpectrum1.MarkerColor) ;
+  ini.WriteInteger('CustomSkin','SpectrumColor',VrSpectrum1.Color) ;
+  ini.WriteInteger('CustomSkin','Spec1PH',VRSpectrum1.Palette1.High) ;
+  ini.WriteInteger('CustomSkin','Spec1PL',VRSpectrum1.Palette1.Low) ;
+  ini.WriteInteger('CustomSkin','Spec2PH',VRSpectrum1.Palette2.High) ;
+  ini.WriteInteger('CustomSkin','Spec2PL',VRSpectrum1.Palette2.Low) ;
+  ini.WriteInteger('CustomSkin','Spec3PH',VRSpectrum1.Palette3.High) ;
+  ini.WriteInteger('CustomSkin','Spec3PL',VRSpectrum1.Palette3.Low) ;
 
   end;
 

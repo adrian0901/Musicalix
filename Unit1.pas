@@ -85,6 +85,7 @@ type
     Skin1: TMenuItem;
     N4: TMenuItem;
     Close1: TMenuItem;
+    About1: TMenuItem;
     procedure btnOpenFolderClick(Sender: TObject);
     procedure mp3ListClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -101,6 +102,7 @@ type
     procedure ChangeLanguage(Sender: TObject);
     procedure ChangeSkin(Sender: TObject);
     procedure WriteDefaultSkin(Sender: TObject);
+    procedure ShowInfo(Sender: TObject);
   private
     { Private declarations }
   public
@@ -135,6 +137,7 @@ var
   repsongtext: string;
   replisttext: string;
   shuffletext: string;
+  abouttext: string;
 
 type
   TID3Rec = packed record
@@ -426,13 +429,13 @@ begin
     if mp3player.Position > 0 then begin
     if VRLevelBar1.Position < VRLevelBar1.MaxValue then begin
     if paused = 0 then begin
-    VrSpectrum1.Items[0].Position := Random(101);
-    VrSpectrum1.Items[1].Position := Random(101);
-    VrSpectrum1.Items[2].Position := Random(101);
-    VrSpectrum1.Items[3].Position := Random(101);
-    VrSpectrum1.Items[4].Position := Random(101);
-    VrSpectrum1.Items[5].Position := Random(101);
-    VrSpectrum1.Items[6].Position := Random(101);
+    VrSpectrum1.Items[0].Position := Random(VrWheel2.Position);
+    VrSpectrum1.Items[1].Position := Random(VrWheel2.Position);
+    VrSpectrum1.Items[2].Position := Random(VrWheel2.Position);
+    VrSpectrum1.Items[3].Position := Random(VrWheel2.Position);
+    VrSpectrum1.Items[4].Position := Random(VrWheel2.Position);
+    VrSpectrum1.Items[5].Position := Random(VrWheel2.Position);
+    VrSpectrum1.Items[6].Position := Random(VrWheel2.Position);
     end;
     end;
     if VRLevelBar1.Position >= VRLevelBar1.MaxValue then begin
@@ -626,6 +629,7 @@ begin
   repsongtext := ini.ReadString('SliderText', 'RepSong', 'Repeat song');
   replisttext := ini.ReadString('SliderText', 'RepList', 'Repeat list');
   shuffletext := ini.ReadString('SliderText', 'Shuffle', 'Shuffle');
+  abouttext := ini.ReadString('OptionText', 'About', 'About');
   Form1.Caption := formtext;
   Play1.Caption := playtext;
   Pause1.Caption := pausetext;
@@ -641,6 +645,7 @@ begin
   Label2.Caption := repsongtext;
   Label3.Caption := replisttext;
   Label4.Caption := shuffletext;
+  About1.Caption := abouttext;
 
   end;
 
@@ -753,6 +758,12 @@ begin
 
   // Free up the dialog
   openDialog.Free;
+end;
+
+procedure TForm1.ShowInfo(Sender: TObject);
+begin
+  ShowMessage('(C) 2017 Musicalix Community. Fork me on https://github.com/adrian0901/Musicalix');
+  ShowMessage('Russian translation by infraGem');
 end;
 
 end.

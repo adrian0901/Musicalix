@@ -82,7 +82,7 @@ type
     Next1: TMenuItem;
     N3: TMenuItem;
     Language1: TMenuItem;
-    Skincomingsoon1: TMenuItem;
+    Skin1: TMenuItem;
     N4: TMenuItem;
     Close1: TMenuItem;
     procedure btnOpenFolderClick(Sender: TObject);
@@ -126,6 +126,13 @@ var
   languagetext: string;
   skintext: string;
   closetext: string;
+  formtext: string;
+  prevtext: string;
+  nexttext: string;
+  offtext: string;
+  repsongtext: string;
+  replisttext: string;
+  shuffletext: string;
 
 type
   TID3Rec = packed record
@@ -193,9 +200,9 @@ begin
    VrMatrix1.Text:=mp3File;
  end else begin
    if ID3.Genre in [0..MaxID3Genre] then
-     VrMatrix1.Text:=ID3.Title + ' by '+ID3.Artist+' from '+ID3.Album+' in year '+ID3.Year+' of '+ID3Genre[ID3.Genre]+' genre'
+     VrMatrix1.Text:=ID3.Title + bytext +ID3.Artist+fromtext+ID3.Album+inyeartext+ID3.Year+oftext+ID3Genre[ID3.Genre]+genretext
    else
-     VrMatrix1.Text:=ID3.Title + ' by '+ID3.Artist+' from '+ID3.Album+' in year '+ID3.Year+' of unknown genre';
+     VrMatrix1.Text:=ID3.Title + bytext +ID3.Artist+fromtext+ID3.Album+inyeartext+ID3.Year+oftext+'unknown'+genretext
  end;
 end;
 
@@ -316,7 +323,7 @@ procedure TForm1.btnOpenFolderClick(Sender: TObject);
 var mp3Folder : string;
 begin
 
- mp3Folder := BrowseDialog('Choose a folder with mp3 files', BIF_RETURNONLYFSDIRS);
+ mp3Folder := BrowseDialog(choosefoldertext, BIF_RETURNONLYFSDIRS);
  if mp3Folder = '' then Exit;
 
  VRMatrix2.Text := mp3Folder;
@@ -362,6 +369,12 @@ begin
   FillMP3FileList(VRMatrix2.Text, mp3List.Items);
   VRLevelBar1.MaxValue:=0;
   paused := 1;
+  bytext := ' by ';
+  fromtext := ' from ';
+  inyeartext := ' in year ';
+  oftext := ' of ';
+  genretext := ' genre ';
+  choosefoldertext := 'Choose a folder with mp3 files';
 end;
 
 procedure SetMPVolume(MP: TMediaPlayer; Volume: Integer);
@@ -571,6 +584,7 @@ end;
 procedure TForm1.ChangeLanguage(Sender: TObject);
 var
   opendialog: topendialog;
+  ini: TIniFile;
 begin
   // Create the open dialog object - assign to our open dialog variable
   openDialog := TOpenDialog.Create(self);
@@ -581,16 +595,50 @@ begin
   // Only allow existing files to be selected
   openDialog.Options := [ofFileMustExist];
 
-  // Allow only .dpr and .pas files to be selected
+  // Allow only .ini files to be selected
   openDialog.Filter :=
     'INI|*.ini';
-
-  // Select pascal files as the starting filter type
-  openDialog.FilterIndex := 2;
 
   // Display the open file dialog
   if openDialog.Execute
   then begin
+  ini := TIniFile.Create(openDialog.FileName);
+  bytext := ini.ReadString('FlavorText', 'By', 'By');
+  fromtext := ini.ReadString('FlavorText', 'From', 'From');
+  inyeartext := ini.ReadString('FlavorText', 'InYear', 'In year');
+  oftext := ini.ReadString('FlavorText', 'Of', 'Of');
+  genretext := ini.ReadString('FlavorText', 'Genre', 'Genre');
+  choosefoldertext:= ini.ReadString('WindowText', 'ChooseFolder', 'Choose a folder with mp3 files');
+  formtext := ini.ReadString('WindowText', 'FormText', 'Musicalix');
+  playtext := ini.ReadString('OptionText', 'Play', 'Play');
+  pausetext := ini.ReadString('OptionText', 'Pause', 'Pause');
+  stoptext := ini.ReadString('OptionText', 'Stop', 'Stop');
+  backtext := ini.ReadString('OptionText', 'Back', 'Back');
+  steptext := ini.ReadString('OptionText', 'Step', 'Step');
+  prevtext := ini.ReadString('OptionText', 'Prev', 'Prev');
+  nexttext := ini.ReadString('OptionText', 'Next', 'Next');
+  offtext := ini.ReadString('SliderText', 'Off', 'Off');
+  languagetext := ini.ReadString('OptionText', 'Language', 'Language...');
+  skintext := ini.ReadString('OptionText', 'Skin', 'Skin...');
+  closetext := ini.ReadString('OptionText', 'Close', 'Close');
+  repsongtext := ini.ReadString('SliderText', 'RepSong', 'Repeat song');
+  replisttext := ini.ReadString('SliderText', 'RepList', 'Repeat list');
+  shuffletext := ini.ReadString('SliderText', 'Shuffle', 'Shuffle');
+  Form1.Caption := formtext;
+  Play1.Caption := playtext;
+  Pause1.Caption := pausetext;
+  Stop1.Caption := stoptext;
+  Back1.Caption := backtext;
+  Step1.Caption := steptext;
+  Prev1.Caption := prevtext;
+  Next1.Caption := nexttext;
+  Language1.Caption := languagetext;
+  Skin1.Caption := skintext;
+  Close1.Caption := closetext;
+  Label1.Caption := offtext;
+  Label2.Caption := repsongtext;
+  Label3.Caption := replisttext;
+  Label4.Caption := shuffletext;
 
   end;
 

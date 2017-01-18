@@ -9,4 +9,4 @@ Just get the release file, unzip it, and run the exe.
 If you want to contribute, just fork this, do a pull request, and then if the changes are needed, I'll accept!
 
 # License
-Liberal License. Use this in every way possible, including selling this. Just don't forget to credit adrian09_01 in the credits window.
+https://www.gnu.org/licenses/gpl-3.0.en.html

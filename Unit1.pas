@@ -11,7 +11,7 @@ uses
   StdCtrls, Buttons, MPlayer, ComCtrls, ExtCtrls, VrControls, VrWheel,
   VrLcd, VrMatrix, VrHPTimerFunc, VrLevelBar, VrSpectrum, VrNavigator,
   VrSystem, VrDisplay, VrSwitch, VrImageLed, MMSystem, VrLabel, ImgList,
-  Menus, inifiles;
+  Menus, inifiles, UHTMLabel, Unit2;
 
 const
   MCI_SETAUDIO = $0873;
@@ -63,11 +63,7 @@ type
     VrImageLed1: TVrImageLed;
     VrImageLed2: TVrImageLed;
     VrSwitch1: TVrSwitch;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
     VrClock1: TVrClock;
-    Label4: TLabel;
     ImageList1: TImageList;
     VrTrayIcon1: TVrTrayIcon;
     PopupMenu1: TPopupMenu;
@@ -86,6 +82,10 @@ type
     N4: TMenuItem;
     Close1: TMenuItem;
     About1: TMenuItem;
+    UniHTMLabel1: TUniHTMLabel;
+    UniHTMLabel2: TUniHTMLabel;
+    UniHTMLabel3: TUniHTMLabel;
+    UniHTMLabel4: TUniHTMLabel;
     procedure btnOpenFolderClick(Sender: TObject);
     procedure mp3ListClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -138,6 +138,7 @@ var
   replisttext: string;
   shuffletext: string;
   abouttext: string;
+  translatorstring: string;
 
 type
   TID3Rec = packed record
@@ -630,6 +631,7 @@ begin
   replisttext := ini.ReadString('SliderText', 'RepList', 'Repeat list');
   shuffletext := ini.ReadString('SliderText', 'Shuffle', 'Shuffle');
   abouttext := ini.ReadString('OptionText', 'About', 'About');
+  translatorstring := ini.ReadString('General', 'Translator', 'Anonymous');
   Form1.Caption := formtext;
   Play1.Caption := playtext;
   Pause1.Caption := pausetext;
@@ -641,10 +643,10 @@ begin
   Language1.Caption := languagetext;
   Skin1.Caption := skintext;
   Close1.Caption := closetext;
-  Label1.Caption := offtext;
-  Label2.Caption := repsongtext;
-  Label3.Caption := replisttext;
-  Label4.Caption := shuffletext;
+  UniHTMLabel1.HTMLText := offtext;
+  UniHTMLabel2.HTMLText := repsongtext;
+  UniHTMLabel3.HTMLText := replisttext;
+  UniHTMLabel4.HTMLText := shuffletext;
   About1.Caption := abouttext;
 
   end;
@@ -762,8 +764,8 @@ end;
 
 procedure TForm1.ShowInfo(Sender: TObject);
 begin
-  ShowMessage('(C) 2017 Musicalix Community. Fork me on https://github.com/adrian0901/Musicalix');
-  ShowMessage('Russian translation by infraGem');
+  AboutBox.ShowModal;
+  ShowMessage('Current translation by '+translatorstring);
 end;
 
 end.
